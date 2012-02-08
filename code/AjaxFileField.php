@@ -106,6 +106,8 @@ JS;
 	 */
 	public function save($data = null, $form = null) {
 		
+		$json = array();
+		
 		$this->upload->setValidator(new XHRUpload_Validator()); //hack solution to allow XHR uploads
 		
 		$fileparts = null;
@@ -120,9 +122,6 @@ JS;
         
         if(!$fileparts) return null;
         
-        //var_export($fileparts);
-        //die();
-        
         //create database entry for image
        // $desiredClass = $this->dataClass();
         $desiredClass = "Image"; //TODO: temp - make a subclass, or handle image uploads
@@ -131,6 +130,13 @@ JS;
         //TODO: create a custom 'dummy' validator that allows uploading via XmlHttpRequest
         
         $this->upload->loadIntoFile($fileparts, $fileObject, $this->folderName); 
+        
+        if($this->upload->isError()){
+        	$errors = $this->upload->getErrors();
+        	$json = array('error',implode(",",$errors));
+        	return $this->returnJSON($json);
+        }        
+        
         
         $file = $this->upload->getFile();
         
@@ -146,11 +152,15 @@ JS;
         
         //if ajax, then return file details
         
-        $filejson = $file->toMap();
+        $json = $file->toMap();
         
         if(Director::is_ajax()){
-        	return json_encode($filejson);
+        	return $this->returnJSON($json);
         }
+	}
+	
+	function returnJSON($jsonarray){
+		return htmlspecialchars(json_encode($jsonarray), ENT_NOQUOTES);
 	}
 	
 	/**
