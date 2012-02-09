@@ -120,7 +120,7 @@ JS;
            $fileparts = $_FILES[$this->Name()];
         }
         
-        if(!$fileparts) return null;
+        if(!$fileparts) return $this->returnJSON(array("error","No file was uploaded."));
         
         //create database entry for image
        // $desiredClass = $this->dataClass();
