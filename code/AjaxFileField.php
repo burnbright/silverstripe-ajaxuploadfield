@@ -174,7 +174,7 @@ JS;
 		
 		//TODO: use base_convert(uniqid(),10,36) to add uniqueness to each file 
 		
-		$tempfilepath = sys_get_temp_dir(). $filename;
+		$tempfilepath = TEMP_FOLDER.'/'.$filename;
 	    $upload = file_put_contents($tempfilepath,file_get_contents('php://input'));
 	    
 	    $size = (isset($_SERVER["CONTENT_LENGTH"]))? (int)$_SERVER["CONTENT_LENGTH"] : 0;
