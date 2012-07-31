@@ -10,6 +10,12 @@
 
 class AjaxFileField extends FileField{
 	
+	protected $buttonClasses = array();
+	
+	public function addButtonClass($class){
+		$this->buttonClasses[] = $class;
+	}
+	
 	public function Field(){
 		
 		//TODO: require jquery
@@ -38,7 +44,9 @@ class AjaxFileField extends FileField{
 		//TODO: store globally reachable js reference, to allow later customisations
 		//TODO: display errors in validation span??
 		
-		$replacementhtml = '<span id=\"'.$htmlid.'\"><input type=\"submit\" value=\"'.$this->title.'\" /></span>';
+		$extraclasses = count($this->buttonClasses) ? 'class=\"'.implode(" ",$this->buttonClasses).'\"' : "";
+		
+		$replacementhtml = '<span id=\"'.$htmlid.'\"><input type=\"submit\" '.$extraclasses.' value=\"'.$this->title.'\" /></span>';
 		
 		$script =<<<JS
 			qq.instances = qq.instances ? qq.instances : {};
@@ -91,9 +99,7 @@ JS;
 			)
 		);
 		$html .= "</div>";
-		
 		return $html;
-		
 	}
 	
 	/**
@@ -127,8 +133,6 @@ JS;
         $desiredClass = "Image"; //TODO: temp - make a subclass, or handle image uploads
         $fileObject = Object::create($desiredClass);
         
-        //TODO: create a custom 'dummy' validator that allows uploading via XmlHttpRequest
-        
         $this->upload->loadIntoFile($fileparts, $fileObject, $this->folderName); 
         
         if($this->upload->isError()){
@@ -137,8 +141,11 @@ JS;
         	return $this->returnJSON($json);
         }        
         
-        
         $file = $this->upload->getFile();
+        if($member = Member::currentUser()){
+			$file->OwnerID = $member->ID;
+        }
+        $file->write();
         
         //TODO: record linking?
         /*
@@ -153,6 +160,9 @@ JS;
         //if ajax, then return file details
         
         $json = $file->toMap();
+        if($file instanceof Image){
+        	$json['thumbnailurl'] = $file->CMSThumbnail()->getURL();
+        }
         
         if(Director::is_ajax()){
         	return $this->returnJSON($json);
