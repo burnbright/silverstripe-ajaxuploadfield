@@ -106,67 +106,52 @@ JS;
 	 * Saves uplaoded image into file.
 	 * The function can handle three different ways of uploading an image: XHR, iframe, form post,
 	 * where the first two are done via the fileuploader script.
-	 * 
+	 *
 	 * A dummy file array is created for Upload to properly process.
-	 * 
+	 *
 	 */
 	public function save($data = null, $form = null) {
-		
 		$json = array();
-		
 		$this->upload->setValidator(new XHRUpload_Validator()); //hack solution to allow XHR uploads
-		
 		$fileparts = null;
 
-	    if (isset($_GET['qqfile'])) {
-            $fileparts =  $this->saveXHR($_GET['qqfile']);
-        } elseif (isset($_FILES['qqfile'])) { //TODO: this could probably be replaced by setting the field name in javascript
-           $fileparts =  $_FILES['qqfile'];
-        } elseif(isset($_FILES[$this->Name()])) {
-           $fileparts = $_FILES[$this->Name()];
-        }
-        
-        if(!$fileparts) return $this->returnJSON(array("error","No file was uploaded."));
-        
-        //create database entry for image
-       // $desiredClass = $this->dataClass();
-        $desiredClass = "Image"; //TODO: temp - make a subclass, or handle image uploads
-        $fileObject = Object::create($desiredClass);
-        
-        $this->upload->loadIntoFile($fileparts, $fileObject, $this->folderName); 
-        
-        if($this->upload->isError()){
-        	$errors = $this->upload->getErrors();
-        	$json = array('error',implode(",",$errors));
-        	return $this->returnJSON($json);
-        }        
-        
-        $file = $this->upload->getFile();
-        if($member = Member::currentUser()){
+		if (isset($_GET['qqfile'])) {
+			$fileparts =  $this->saveXHR($_GET['qqfile']);
+		} elseif (isset($_FILES['qqfile'])) { //TODO: this could probably be replaced by setting the field name in javascript
+			$fileparts =  $_FILES['qqfile'];
+		} elseif(isset($_FILES[$this->Name()])) {
+			$fileparts = $_FILES[$this->Name()];
+		}
+		if(!$fileparts){
+			return $this->returnJSON(array("error","No file was uploaded."));
+		}
+		//create database entry for image
+		// $desiredClass = $this->dataClass();
+		$desiredClass = "Image"; //TODO: temp - make a subclass, or handle image uploads
+		$fileObject = Object::create($desiredClass);
+		$this->upload->loadIntoFile($fileparts, $fileObject, $this->folderName);
+
+		if($this->upload->isError()){
+			$errors = $this->upload->getErrors();
+			$json = array('error',implode(",",$errors));
+			return $this->returnJSON($json);
+		}
+
+		$file = $this->upload->getFile();
+		if($member = Member::currentUser()){
 			$file->OwnerID = $member->ID;
-        }
-        $file->write();
-        
-        //TODO: record linking?
-        /*
-        if($this->relationAutoSetting) {
-        	if(!$hasOnes) return false;
-        		
-        	// save to record
-        	$record->{$this->name . 'ID'} = $file->ID;
-        }
-        */
-        
-        //if ajax, then return file details
-        
-        $json = $file->toMap();
-        if($file instanceof Image){
+		}
+		$file->write();
+
+		//TODO: record linking
+
+		//if ajax, then return file details
+		$json = $file->toMap();
+		if($file instanceof Image){
         	$json['thumbnailurl'] = $file->CMSThumbnail()->getURL();
-        }
+      }
         
-        if(Director::is_ajax()){
-        	return $this->returnJSON($json);
-        }
+		return $this->returnJSON($json);
 	}
 	
 	function returnJSON($jsonarray){
@@ -181,21 +166,16 @@ JS;
 	* 
 	*/
 	function saveXHR($filename){
-		
 		//TODO: use base_convert(uniqid(),10,36) to add uniqueness to each file 
-		
 		$tempfilepath = TEMP_FOLDER.'/'.$filename;
-	    $upload = file_put_contents($tempfilepath,file_get_contents('php://input'));
-	    
-	    $size = (isset($_SERVER["CONTENT_LENGTH"]))? (int)$_SERVER["CONTENT_LENGTH"] : 0;
-	    
-	    if(!$size) return null; //TODO: throwing an error message would help here
-	    
-	    return array(
+	   $upload = file_put_contents($tempfilepath,file_get_contents('php://input'));
+	   $size = (isset($_SERVER["CONTENT_LENGTH"]))? (int)$_SERVER["CONTENT_LENGTH"] : 0;
+	   if(!$size) return null; //TODO: throwing an error message would help here
+	   return array(
 	    	'tmp_name' => $tempfilepath,
 	    	'name' => $filename,
 	    	'size' => $size
-	    );
+		);
 	}
 	
 }
