@@ -19,7 +19,7 @@ class AjaxFileField extends FileField{
 	public function Field(){
 		
 		//TODO: require jquery
-		Requirements::javascript('ajaxuploadfield/thirdparty/valums/client/fileuploader.js','fileuploader');
+		Requirements::javascript('ajaxuploadfield/thirdparty/valums/client/fileuploader.min.js','fileuploader');
 		//Requirements::css('ajaxfileupload/thirdparty/valums/client/fileuploader.css');
 		
 		//configure javascript
