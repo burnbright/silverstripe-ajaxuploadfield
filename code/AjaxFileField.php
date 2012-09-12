@@ -1,53 +1,52 @@
 <?php
-
 /**
- * Ajax File Field
+ * Ajax File Field - based on Valums file uploader
  * 
  * Similar to FileIFrameField, except it allows XHR uploads via the file-uploader javascript.
  * 
- *	Requires javascript and jQuery?
  */
-
 class AjaxFileField extends FileField{
 	
-	protected $buttonClasses = array();
+	protected $buttonClasses,$config = array();
 	
 	public function addButtonClass($class){
 		$this->buttonClasses[] = $class;
 	}
 	
+	/**
+	 * Set or override specific configs
+	 * see thirdparty/valums/reademe.md
+	 */
+	public function setConfig($config = array()){
+		$this->config = $config;
+	}
+	
 	public function Field(){
-		
-		//TODO: require jquery
 		Requirements::javascript('ajaxuploadfield/thirdparty/valums/client/fileuploader.min.js','fileuploader');
-		//Requirements::css('ajaxfileupload/thirdparty/valums/client/fileuploader.css');
 		
 		//configure javascript
-		
 		$htmlid = $this->XML_val('Name')."_uploader";
 		$thislink = $this->Link('save');
-		$maxfilesize = $this->getValidator()->getAllowedMaxFileSize();
-		$allowedextensions = $this->getValidator()->getAllowedExtensions();
-		
 		$options = array(
 			'action' => $thislink,
-			'allowedExtensions' => $allowedextensions,
 			'multiple' => false, //prevent multiple file uploads
-			'sizeLimit' => $maxfilesize
 		);
-		if(Director::isDev()) $options['debug'] = true;
-		$encodedoptions = json_encode($options);
-		
-		//TODO: minSizeLimit
-		//TODO: extra params?
-		//TODO: override showMessage?
-		//TODO: store globally reachable js reference, to allow later customisations
-		//TODO: display errors in validation span??
-		
+		$allowedextensions = $this->getValidator()->getAllowedExtensions();
+		if(is_array($allowedextensions)){
+			$options['allowedExtensions'] = $allowedextensions;
+		}
+		if($maxfilesize = $this->getValidator()->getAllowedMaxFileSize()){
+			$options['sizeLimit'] = $maxfilesize;
+		}
+		if(Director::isDev()){
+			$options['debug'] = true;
+		}
+		$options = array_merge($options,$this->config);
+		$encodedoptions = json_encode($options);		
 		$extraclasses = count($this->buttonClasses) ? 'class=\"'.implode(" ",$this->buttonClasses).'\"' : "";
-		
 		$replacementhtml = '<span id=\"'.$htmlid.'\"><input type=\"submit\" '.$extraclasses.' value=\"'.$this->title.'\" /></span>';
 		
+		//store globally reachable js reference, to allow later customisations
 		$script =<<<JS
 			qq.instances = qq.instances ? qq.instances : {};
 			$("#$htmlid").html("$replacementhtml").each(function(){
@@ -61,17 +60,18 @@ class AjaxFileField extends FileField{
 JS;
 		
 		Requirements::customScript($script,'uploader'.$this->id());
-
-	    if($this->form) $record = $this->form->getRecord();
-	    $fieldName = $this->name;
-	    if(isset($record)&&$record) {
-	    	$imageField = $record->$fieldName();
-	    } else {
-	    	$imageField = "";
-	    }
+		
+		if($this->form){
+			$record = $this->form->getRecord();
+		}
+		$fieldName = $this->name;
+		if(isset($record) && $record) {
+    		$imageField = $record->$fieldName();
+		} else {
+			$imageField = "";
+		}
 	    
 		$html = "<div id=\"$htmlid\">";
-		
 		if($imageField && $imageField->exists()) {
 			$html .= '<div class="thumbnail">';
 			if($imageField->hasMethod('Thumbnail') && $imageField->Thumbnail()) {

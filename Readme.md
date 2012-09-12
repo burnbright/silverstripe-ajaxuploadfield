@@ -1,7 +1,6 @@
 # AjaxFileUpload Field
 
 Author: Jeremy Shipman <jeremy@burnbright.net>
-Version: 0.1
 
 ## About
 
@@ -9,14 +8,17 @@ Ajax image uploading via javascript.
 
 Rolls back to an image upload field, to be submitted on form submission.
 
-Requires jQuery
-
+Currently requires jQuery
 
 ## TODO
 
  * Write tests
  * XmlHttpRequest uploading should be incorporated into SilverStripe core at some stage. (see XHRUpload_Validator)
  * Ability to reference via javascript
+ * Allow setting custom configs params eg minSizeLimit
+ * override showMessage
+ * display errors in validation span
+ * require jquery, or remove dependency
  
  Handle scenarios
  
