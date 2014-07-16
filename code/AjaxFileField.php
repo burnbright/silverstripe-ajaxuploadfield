@@ -1,4 +1,4 @@
-<?php
+	<?php
 /**
  * Ajax File Field - based on Valums file uploader
  * 
@@ -21,7 +21,7 @@ class AjaxFileField extends FileField{
 		$this->config = $config;
 	}
 	
-	public function Field(){
+	public function Field($properties = array()){
 		Requirements::javascript('ajaxuploadfield/thirdparty/valums/client/fileuploader.min.js','fileuploader');
 		
 		//configure javascript
@@ -86,16 +86,14 @@ JS;
 				"type" => "file", 
 				"name" => $this->name, 
 				"id" => $this->id(),
-				"tabindex" => $this->getTabIndex(),
 				'disabled' => $this->disabled
 			)
 		);
 		$html .= $this->createTag("input", 
 			array(
-				"type" => "hidden", 
+				"type" => "hidden",
 				"name" => "MAX_FILE_SIZE", 
-				"value" => $maxfilesize,
-				"tabindex" => $this->getTabIndex()
+				"value" => $maxfilesize
 			)
 		);
 		$html .= "</div>";
