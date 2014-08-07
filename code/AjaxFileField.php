@@ -7,6 +7,11 @@
  */
 class AjaxFileField extends FileField{
 	
+	private static $allowed_actions = array(
+		'save',
+		'saveXHR'
+	);
+
 	protected $buttonClasses,$config = array();
 	
 	public function addButtonClass($class){
