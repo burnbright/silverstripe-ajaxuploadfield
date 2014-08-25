@@ -13,6 +13,8 @@ class AjaxFileField extends FileField{
 	);
 
 	protected $buttonClasses,$config = array();
+
+	protected $sessionstoreid;
 	
 	public function addButtonClass($class){
 		$this->buttonClasses[] = $class;
@@ -24,6 +26,12 @@ class AjaxFileField extends FileField{
 	 */
 	public function setConfig($config = array()){
 		$this->config = $config;
+	}
+
+	public function setSessionStoreId($id) {
+		$this->sessionstoreid = $id;
+
+		return $this;
 	}
 	
 	public function Field($properties = array()){
@@ -145,6 +153,10 @@ JS;
 			$file->OwnerID = $member->ID;
 		}
 		$file->write();
+
+		if($this->sessionstoreid){
+			Session::set($this->sessionstoreid.".".$file->ID, $file->ID);
+		}
 
 		//TODO: record linking
 
