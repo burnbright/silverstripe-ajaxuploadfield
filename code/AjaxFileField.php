@@ -15,6 +15,12 @@ class AjaxFileField extends FileField{
 	protected $buttonClasses,$config = array();
 
 	protected $sessionstoreid;
+
+	public function __construct($name, $title = null, $value = null) {
+		parent::__construct($name, $title, $value);
+		$validator = Injector::inst()->create('XHRUpload_Validator');;
+		$this->upload->setValidator($validator);
+	}
 	
 	public function addButtonClass($class){
 		$this->buttonClasses[] = $class;
@@ -123,7 +129,6 @@ JS;
 	 */
 	public function save($data = null, $form = null) {
 		$json = array();
-		$this->upload->setValidator(new XHRUpload_Validator()); //hack solution to allow XHR uploads
 		$fileparts = null;
 
 		if (isset($_GET['qqfile'])) {
